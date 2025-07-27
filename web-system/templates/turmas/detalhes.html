@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}{{ turma['nome_turma'] }} - Detalhes{% endblock %}
+
+{% block content %}
+<div class="header text-center mb-4">
+    <div class="container">
+        <h1><i class="bi bi-people"></i> {{ turma['nome_turma'] }}</h1>
+        <p class="lead">{{ turma['professor'] }} - Sala: {{ turma['sala'] }}</p>
+        <p class="uuid">
+            <i class="bi bi-fingerprint"></i> ID: {{ turma['id'] }}
+        </p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="d-flex justify-content-between mb-4">
+        <a href="/" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+        <div>
+            <a href="/turma/{{ turma['id'] }}/relatorio" class="btn btn-success">
+                <i class="bi bi-download"></i> Relatório
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Alunos da Turma -->
+        <div class="col-md-6 mb-4">
+            <div class="card aluno-card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-people"></i> Alunos ({{ alunos_turma|length }})</h4>
+                </div>
+                <div class="card-body">
+                    {% if not alunos_turma %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> Nenhum aluno nesta turma.
+                    </div>
+                    {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Matrícula</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aluno in alunos_turma %}
+                                <tr>
+                                    <td>{{ aluno['nome'] }}</td>
+                                    <td>{{ aluno['matricula'] }}</td>
+                                    <td>
+                                        <form action="{{ url_for('remover_aluno_turma', turma_id=turma['id'], aluno_id=aluno['id']) }}" method="POST" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Remover este aluno da turma?')">
+                                                <i class="bi bi-person-dash"></i> Remover
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Adicionar Alunos -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0"><i class="bi bi-person-plus"></i> Adicionar Alunos</h4>
+                </div>
+                <div class="card-body">
+                    {% if not alunos_disponiveis %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> Todos os alunos já estão nesta turma.
+                    </div>
+                    {% else %}
+                    <form method="POST" action="{{ url_for('adicionar_aluno_turma', turma_id=turma['id']) }}">
+                        <div class="mb-3">
+                            <label class="form-label">Selecione aluno(s):</label>
+                            <select class="form-select" name="aluno_id" required>
+                                <option value="">Selecione um aluno...</option>
+                                {% for aluno in alunos_disponiveis %}
+                                <option value="{{ aluno['id'] }}">
+                                    {{ aluno['nome'] }} ({{ aluno['matricula'] }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-plus-circle"></i> Adicionar à Turma
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Presenças -->
+            <div class="card mt-4 presenca-card">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0"><i class="bi bi-check-circle"></i> Registros de Presença</h4>
+                </div>
+                <div class="card-body">
+                    {% if not presencas %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> Nenhuma presença registrada.
+                    </div>
+                    {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Matrícula</th>
+                                    <th>Data/Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for presenca in presencas %}
+                                <tr>
+                                    <td>{{ presenca['nome'] }}</td>
+                                    <td>{{ presenca['matricula'] }}</td>
+                                    <td>{{ presenca['data_hora'] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

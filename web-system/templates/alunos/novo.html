@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastrar Novo Aluno{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="bi bi-person-plus"></i> Cadastrar Novo Aluno</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('novo_aluno') }}">
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label for="nome" class="form-label">Nome Completo*</label>
+                                <input type="text" class="form-control" id="nome" name="nome" required
+                                       placeholder="Digite o nome completo do aluno">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="matricula" class="form-label">Matrícula*</label>
+                                <input type="text" class="form-control" id="matricula" name="matricula" required
+                                       placeholder="Número da matrícula">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="rfid" class="form-label">Código RFID</label>
+                                <input type="text" class="form-control" id="rfid" name="rfid"
+                                       placeholder="Código do cartão RFID">
+                                <div class="form-text">Opcional - para sistemas de presença automática</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="telefone" class="form-label">Telefone</label>
+                                <input type="tel" class="form-control" id="telefone" name="telefone"
+                                       placeholder="(00) 00000-0000">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                   placeholder="aluno@escola.com">
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('listar_alunos') }}" class="btn btn-secondary me-md-2">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Cadastrar Aluno
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

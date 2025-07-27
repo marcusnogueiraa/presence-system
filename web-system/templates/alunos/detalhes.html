@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}{{ aluno['nome'] }} - Detalhes{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="bi bi-person-badge"></i> {{ aluno['nome'] }}
+            <small class="text-muted">{{ aluno['matricula'] }}</small>
+        </h1>
+        <div>
+            <a href="{{ url_for('editar_aluno', aluno_id=aluno['id']) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            <a href="{{ url_for('listar_alunos') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informações do Aluno -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0"><i class="bi bi-info-circle"></i> Informações</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Matrícula:</dt>
+                        <dd class="col-sm-7">{{ aluno['matricula'] }}</dd>
+
+                        <dt class="col-sm-5">RFID:</dt>
+                        <dd class="col-sm-7">
+                            {% if aluno['rfid'] %}
+                            <span class="badge bg-secondary">{{ aluno['rfid'] }}</span>
+                            {% else %}
+                            <span class="text-muted">Não cadastrado</span>
+                            {% endif %}
+                        </dd>
+
+                        <dt class="col-sm-5">Email:</dt>
+                        <dd class="col-sm-7">{{ aluno['email'] or '-' }}</dd>
+
+                        <dt class="col-sm-5">Telefone:</dt>
+                        <dd class="col-sm-7">{{ aluno['telefone'] or '-' }}</dd>
+
+                        <dt class="col-sm-5">Cadastrado em:</dt>
+                        <dd class="col-sm-7">{{ aluno['data_cadastro'] }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0"><i class="bi bi-graph-up"></i> Estatísticas</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="display-6">{{ total_turmas }}</div>
+                            <div class="text-muted">Turmas</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="display-6">{{ total_presencas }}</div>
+                            <div class="text-muted">Presenças</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Turmas do Aluno -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-mortarboard"></i> Turmas</h4>
+                    <span class="badge bg-primary rounded-pill">{{ turmas|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% if not turmas %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> Aluno não está em nenhuma turma.
+                    </div>
+                    {% else %}
+                    <div class="list-group">
+                        {% for turma in turmas %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ turma['nome_turma'] }}</h6>
+                                <small class="text-muted">
+                                    {{ turma['professor'] }} | {{ turma['sala'] }}
+                                </small>
+                            </div>
+                            <small class="text-muted">{{ turma['data_inscricao'] }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Últimas Presenças -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-check-circle"></i> Últimas Presenças</h4>
+                    <a href="#" class="btn btn-sm btn-outline-primary">Ver todas</a>
+                </div>
+                <div class="card-body">
+                    {% if not presencas %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> Nenhuma presença registrada.
+                    </div>
+                    {% else %}
+                    <div class="list-group">
+                        {% for presenca in presencas %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ presenca['nome_turma'] }}</h6>
+                                <small>{{ presenca['data_hora'] }}</small>
+                            </div>
+                            <small class="text-muted">{{ presenca['sala'] }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

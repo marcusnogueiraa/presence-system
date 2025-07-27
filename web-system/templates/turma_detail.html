@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}{{ turma['professor'] }} - Sistema de Presença{% endblock %}
+
+{% block content %}
+<div class="header text-center mb-4">
+    <div class="container">
+        <h1><i class="bi bi-people"></i> {{ turma['nome_turma'] }}</h1>
+        <p class="lead">{{ turma['professor'] }} - Sala: {{ turma['sala'] }}</p>
+        <p class="uuid">
+            <i class="bi bi-fingerprint"></i> ID: {{ turma['id'] }}
+            <button class="btn btn-sm btn-outline-secondary ms-2 copy-uuid" data-uuid="{{ turma['id'] }}">
+                <i class="bi bi-clipboard"></i> Copiar ID
+            </button>
+        </p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="d-flex justify-content-between mb-4">
+        <a href="/" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+        <div>
+            <a href="/turma/{{ turma['id'] }}/relatorio" class="btn btn-success">
+                <i class="bi bi-download"></i> Baixar Relatório
+            </a>
+            <a href="/api/ajuda" class="btn btn-outline-primary">
+                <i class="bi bi-code-slash"></i> Ajuda API
+            </a>
+        </div>
+    </div>
+
+
+    {% if request.args.get('error') %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> {{ request.args.get('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Coluna Esquerda: Alunos -->
+        <div class="col-lg-6 mb-4">
+            <div class="card aluno-card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-person-plus"></i> Adicionar Aluno</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="/adicionar_aluno">
+                        <input type="hidden" name="turma_id" value="{{ turma['id'] }}">
+                        
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Nome Completo</label>
+                            <input type="text" class="form-control" id="nome" name="nome" required
+                                   placeholder="Nome completo do aluno">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="matricula" class="form-label">Matrícula</label>
+                                <input type="text" class="form-control" id="matricula" name="matricula" required
+                                       placeholder="Número de matrícula">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="rfid" class="form-label">ID do Cartão RFID</label>
+                                <input type="text" class="form-control" id="rfid" name="rfid" required
+                                       placeholder="Código do cartão">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-plus-circle"></i> Adicionar Aluno
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-people"></i> Alunos ({{ alunos|length }})</h4>
+                </div>
+                <div class="card-body">
+                    {% if not alunos %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> Nenhum aluno cadastrado nesta turma.
+                    </div>
+                    {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Matrícula</th>
+                                    <th>RFID</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aluno in alunos %}
+                                <tr>
+                                    <td>{{ aluno['nome'] }}</td>
+                                    <td>{{ aluno['matricula'] }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ aluno['rfid'] }}</span>
+                                    </td>
+                                    <td>
+                                        <form action="/excluir_aluno/{{ aluno['id'] }}" method="POST" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Tem certeza que deseja excluir este aluno? Todos os registros de presença serão removidos.')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coluna Direita: Presenças e API -->
+        <div class="col-lg-6 mb-4">
+            <div class="card presenca-card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-check-circle"></i> Registros de Presença</h4>
+                </div>
+                <div class="card-body">
+                    {% if not presencas %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> Nenhuma presença registrada ainda.
+                    </div>
+                    {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Matrícula</th>
+                                    <th>Data/Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody id="presencas-tabela">
+                                {% for presenca in presencas %}
+                                <tr>
+                                    <td>{{ presenca['nome'] }}</td>
+                                    <td>{{ presenca['matricula'] }}</td>
+                                    <td>{{ presenca['data_hora'] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0"><i class="bi bi-cpu"></i> Integração com ESP32</h4>
+                </div>
+                <div class="card-body">
+                    <p>Para registrar presenças via ESP32, envie uma requisição HTTP POST para:</p>
+                    
+                    <div class="alert alert-secondary mb-3">
+                        <code>POST {{ url_for('registrar_presenca_api', _external=True) }}</code>
+                    </div>
+                    
+                    <p>Com o seguinte corpo JSON:</p>
+                    
+                    <pre class="bg-light p-3 rounded mb-3">{
+    "rfid": "ID_DO_CARTAO_RFID",
+    "uuid": "{{ turma['id'] }}"
+}</pre>
+                    
+                    <h5>Respostas possíveis:</h5>
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <span class="badge bg-success">200</span> Sucesso
+                            </span>
+                            <code>{"status": "success", "message": "Presença registrada"}</code>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <span class="badge bg-danger">400</span> Dados incompletos
+                            </span>
+                            <code>{"status": "error", "message": "Dados faltando"}</code>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <span class="badge bg-danger">404</span> Aluno não encontrado
+                            </span>
+                            <code>{"status": "error", "message": "Aluno não encontrado"}</code>
+                        </li>
+                    </ul>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Certifique-se de que:
+                        <ul class="mt-2">
+                            <li>O ID do cartão RFID está cadastrado para um aluno desta turma</li>
+                            <li>O UUID da turma está correto</li>
+                            <li>A ESP32 está conectada à mesma rede do servidor</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+    if (!window.socket) {
+        window.socket = io();
+        
+        socket.on('nova_presenca', function(data) {
+            if (data.turma === "{{ turma['id'] }}") {
+                const tabelaPresencas = document.getElementById("presencas-tabela");
+                // Verifique se a presença já não foi adicionada
+                const existingEntries = tabelaPresencas.querySelectorAll('td');
+                let alreadyExists = false;
+                
+                existingEntries.forEach(td => {
+                    if (td.textContent === data.hora && td.nextElementSibling?.textContent === data.matricula) {
+                        alreadyExists = true;
+                    }
+                });
+                
+                if (!alreadyExists) {
+                    const novaLinha = document.createElement("tr");
+                    novaLinha.innerHTML = `
+                        <td>${data.aluno}</td>
+                        <td>${data.matricula}</td>
+                        <td>${data.hora}</td>
+                    `;
+                    tabelaPresencas.insertBefore(novaLinha, tabelaPresencas.firstChild);
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Função para copiar UUID ao clicar no botão
+        document.querySelectorAll('.copy-uuid').forEach(button => {
+            button.addEventListener('click', function() {
+                const uuid = this.getAttribute('data-uuid');
+                navigator.clipboard.writeText(uuid).then(() => {
+                    const originalHTML = this.innerHTML;
+                    this.innerHTML = '<i class="bi bi-check"></i> Copiado!';
+                    
+                    // Restaura o texto original após 2 segundos
+                    setTimeout(() => {
+                        this.innerHTML = originalHTML;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Erro ao copiar texto: ', err);
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

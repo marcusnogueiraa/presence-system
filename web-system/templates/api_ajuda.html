@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Ajuda da API - Sistema de Presença{% endblock %}
+
+{% block content %}
+<div class="header text-center mb-4">
+    <div class="container">
+        <h1><i class="bi bi-code-slash"></i> Documentação da API</h1>
+        <p class="lead">Integração com dispositivos ESP32 para registro de presenças</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="d-flex justify-content-start mb-4">
+        <a href="/" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h3 class="mb-0"><i class="bi bi-send"></i> Endpoint de Registro de Presença</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4><i class="bi bi-gear"></i> Configuração</h4>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Método</th>
+                                    <td><span class="badge bg-primary">POST</span></td>
+                                </tr>
+                                <tr>
+                                    <th>URL</th>
+                                    <td><code>{{ url_for('registrar_presenca_api', _external=True) }}</code></td>
+                                </tr>
+                                <tr>
+                                    <th>Content-Type</th>
+                                    <td><code>application/json</code></td>
+                                </tr>
+                            </table>
+                            
+                            <h4 class="mt-4"><i class="bi bi-card-text"></i> Parâmetros</h4>
+                            <p>O corpo da requisição deve ser um JSON com os seguintes campos:</p>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Campo</th>
+                                        <th>Tipo</th>
+                                        <th>Descrição</th>
+                                        <th>Obrigatório</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>rfid</code></td>
+                                        <td>string</td>
+                                        <td>ID do cartão RFID do aluno</td>
+                                        <td><i class="bi bi-check-lg text-success"></i></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>uuid</code></td>
+                                        <td>string</td>
+                                        <td>ID único da turma</td>
+                                        <td><i class="bi bi-check-lg text-success"></i></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h4><i class="bi bi-file-earmark-code"></i> Exemplo de Requisição</h4>
+                            <div class="code-block mb-3">
+                                <span style="color: #569cd6;">POST</span> <span style="color: #9cdcfe;">{{ url_for('registrar_presenca_api', _external=True) }}</span> <span style="color: #ce9178;">HTTP/1.1</span><br>
+                                <span style="color: #569cd6;">Content-Type</span><span style="color: #d4d4d4;">: </span><span style="color: #9cdcfe;">application/json</span><br>
+                                <span style="color: #569cd6;">Content-Length</span><span style="color: #d4d4d4;">: </span><span style="color: #b5cea8;">43</span><br><br>
+                                {<br>
+                                &nbsp;&nbsp;<span style="color: #9cdcfe;">"rfid"</span>: <span style="color: #ce9178;">"A1B2C3D4"</span>,<br>
+                                &nbsp;&nbsp;<span style="color: #9cdcfe;">"uuid"</span>: <span style="color: #ce9178;">"550e8400-e29b-41d4-a716-446655440000"</span><br>
+                                }
+                            </div>
+                            
+                            <h4><i class="bi bi-reply"></i> Exemplo de Resposta</h4>
+                            <div class="code-block">
+                                <span style="color: #569cd6;">HTTP/1.1</span> <span style="color: #b5cea8;">200</span> <span style="color: #ce9178;">OK</span><br>
+                                <span style="color: #569cd6;">Content-Type</span><span style="color: #d4d4d4;">: </span><span style="color: #9cdcfe;">application/json</span><br><br>
+                                {<br>
+                                &nbsp;&nbsp;<span style="color: #9cdcfe;">"status"</span>: <span style="color: #ce9178;">"success"</span>,<br>
+                                &nbsp;&nbsp;<span style="color: #9cdcfe;">"message"</span>: <span style="color: #ce9178;">"Presença registrada"</span><br>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h3 class="mb-0"><i class="bi bi-exclamation-circle"></i> Códigos de Resposta</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Código HTTP</th>
+                                    <th>Status</th>
+                                    <th>Descrição</th>
+                                    <th>Exemplo de Resposta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-success">200</span></td>
+                                    <td>Sucesso</td>
+                                    <td>Presença registrada com sucesso</td>
+                                    <td><code>{"status": "success", "message": "Presença registrada"}</code></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-danger">400</span></td>
+                                    <td>Bad Request</td>
+                                    <td>Parâmetros faltando ou inválidos</td>
+                                    <td><code>{"status": "error", "message": "Dados faltando"}</code></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-danger">404</span></td>
+                                    <td>Not Found</td>
+                                    <td>Aluno não encontrado na turma especificada</td>
+                                    <td><code>{"status": "error", "message": "Aluno não encontrado"}</code></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-danger">500</span></td>
+                                    <td>Internal Server Error</td>
+                                    <td>Erro interno no servidor</td>
+                                    <td><code>{"status": "error", "message": "Erro no servidor"}</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h3 class="mb-0"><i class="bi bi-cpu"></i> Exemplo de Implementação para ESP32</h3>
+                </div>
+                <div class="card-body">
+                    <p>Aqui está um exemplo completo de como implementar o registro de presença na ESP32:</p>
+                    
+                    <div class="code-block mb-4">
+                        <span style="color: #569cd6;">#include</span> <span style="color: #ce9178;">&lt;WiFi.h&gt;</span><br>
+                        <span style="color: #569cd6;">#include</span> <span style="color: #ce9178;">&lt;HTTPClient.h&gt;</span><br>
+                        <span style="color: #569cd6;">#include</span> <span style="color: #ce9178;">&lt;ArduinoJson.h&gt;</span><br><br>
+                        
+                        <span style="color: #9cdcfe;">const char*</span> ssid = <span style="color: #ce9178;">"SEU_WIFI_SSID"</span>;<br>
+                        <span style="color: #9cdcfe;">const char*</span> password = <span style="color: #ce9178;">"SUA_SENHA_WIFI"</span>;<br>
+                        <span style="color: #9cdcfe;">const char*</span> serverUrl = <span style="color: #ce9178;">"{{ url_for('registrar_presenca_api', _external=True) }}"</span>;<br><br>
+                        
+                        <span style="color: #4ec9b0;">void</span> <span style="color: #dcdcaa;">setup</span>() {<br>
+                        &nbsp;&nbsp;<span style="color: #dcdcaa;">Serial</span>.<span style="color: #dcdcaa;">begin</span>(115200);<br>
+                        &nbsp;&nbsp;<span style="color: #dcdcaa;">WiFi</span>.<span style="color: #dcdcaa;">begin</span>(ssid, password);<br>
+                        &nbsp;&nbsp;<span style="color: #c586c0;">while</span> (<span style="color: #dcdcaa;">WiFi</span>.<span style="color: #dcdcaa;">status</span>() != WL_CONNECTED) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #dcdcaa;">delay</span>(1000);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #dcdcaa;">Serial</span>.<span style="color: #dcdcaa;">println</span>(<span style="color: #ce9178;">"Conectando ao WiFi..."</span>);<br>
+                        &nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;<span style="color: #dcdcaa;">Serial</span>.<span style="color: #dcdcaa;">println</span>(<span style="color: #ce9178;">"Conectado ao WiFi!"</span>);<br>
+                        }<br><br>
+                        
+                        <span style="color: #4ec9b0;">void</span> <span style="color: #dcdcaa;">loop</span>() {<br>
+                        &nbsp;&nbsp;<span style="color: #c586c0;">if</span> (<span style="color: #dcdcaa;">rfidDisponivel</span>()) { <span style="color: #6a9955;">// Implemente sua lógica de leitura RFID</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #9cdcfe;">String</span> rfid = <span style="color: #dcdcaa;">lerRFID</span>(); <span style="color: #6a9955;">// Obter ID do cartão</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #9cdcfe;">String</span> turmaUUID = <span style="color: #ce9178;">"550e8400-e29b-41d4-a716-446655440000"</span>; <span style="color: #6a9955;">// Substitua pelo UUID da sua turma</span><br><br>
+                        
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #dcdcaa;">registrarPresenca</span>(rfid, turmaUUID);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #dcdcaa;">delay</span>(2000); <span style="color: #6a9955;">// Espera 2 segundos entre leituras</span><br>
+                        &nbsp;&nbsp;}<br>
+                        }<br><br>
+                        
+                        <span style="color: #4ec9b0;">void</span> <span style="color: #dcdcaa;">registrarPresenca</span>(<span style="color: #9cdcfe;">String</span> rfid, <span style="color: #9cdcfe;">String</span> uuid) {<br>
+                        &nbsp;&nbsp;<span style="color: #c586c0;">if</span> (<span style="color: #dcdcaa;">WiFi</span>.<span style="color: #dcdcaa;">status</span>() == WL_CONNECTED) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #9cdcfe;">HTTPClient</span> http;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;http.<span style="color: #dcdcaa;">begin</span>(serverUrl);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;http.<span style="color: #dcdcaa;">addHeader</span>(<span style="color: #ce9178;">"Content-Type"</span>, <span style="color: #ce9178;">"application/json"</span>);<br><br>
+                        
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #9cdcfe;">DynamicJsonDocument</span> doc(200);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;doc[<span style="color: #ce9178;">"rfid"</span>] = rfid;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;doc[<span style="color: #ce9178;">"uuid"</span>] = uuid;<br><br>
+                        
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #9cdcfe;">String</span> json;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #dcdcaa;">serializeJson</span>(doc, json);<br><br>
+                        
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #9cdcfe;">int</span> httpCode = http.<span style="color: #dcdcaa;">POST</span>(json);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #c586c0;">if</span> (httpCode > 0) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #9cdcfe;">String</span> payload = http.<span style="color: #dcdcaa;">getString</span>();<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #dcdcaa;">Serial</span>.<span style="color: #dcdcaa;">printf</span>(<span style="color: #ce9178;">"Código HTTP: %d\n"</span>, httpCode);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #dcdcaa;">Serial</span>.<span style="color: #dcdcaa;">println</span>(payload);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;} <span style="color: #c586c0;">else</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #dcdcaa;">Serial</span>.<span style="color: #dcdcaa;">printf</span>(<span style="color: #ce9178;">"Erro na requisição: %s\n"</span>, http.<span style="color: #dcdcaa;">errorToString</span>(httpCode).c_str());<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;http.<span style="color: #dcdcaa;">end</span>();<br>
+                        &nbsp;&nbsp;} <span style="color: #c586c0;">else</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #dcdcaa;">Serial</span>.<span style="color: #dcdcaa;">println</span>(<span style="color: #ce9178;">"WiFi desconectado!"</span>);<br>
+                        &nbsp;&nbsp;}<br>
+                        }
+                    </div>
+                    
+                    <h4><i class="bi bi-wrench"></i> Dependências necessárias:</h4>
+                    <ul>
+                        <li><a href="https://github.com/arduino-libraries/ArduinoHttpClient" target="_blank">HTTPClient</a> (inclusa no ESP32 core)</li>
+                        <li><a href="https://arduinojson.org/" target="_blank">ArduinoJson</a> (versão 6 ou superior)</li>
+                    </ul>
+                    
+                    <div class="alert alert-warning mt-4">
+                        <i class="bi bi-exclamation-triangle"></i> <strong>Importante:</strong>
+                        <ul class="mt-2">
+                            <li>Substitua <code>SEU_WIFI_SSID</code> e <code>SUA_SENHA_WIFI</code> pelas credenciais da sua rede</li>
+                            <li>Substitua o UUID da turma pelo valor correto</li>
+                            <li>Implemente as funções <code>rfidDisponivel()</code> e <code>lerRFID()</code> de acordo com sua leitora RFID</li>
+                            <li>Este código requer a biblioteca ArduinoJson para funcionar</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h3 class="mb-0"><i class="bi bi-question-circle"></i> Solução de Problemas</h3>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="troubleshootingAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                    A ESP32 não consegue conectar ao WiFi
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                <div class="accordion-body">
+                                    <ul>
+                                        <li>Verifique se o SSID e senha estão corretos</li>
+                                        <li>Certifique-se de que a rede WiFi está disponível</li>
+                                        <li>Verifique se a rede está no padrão 2.4GHz (ESP32 não suporta 5GHz)</li>
+                                        <li>Aumente o timeout de conexão se necessário</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                    Recebo erro 404 "Aluno não encontrado"
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                <div class="accordion-body">
+                                    <ul>
+                                        <li>Verifique se o RFID enviado está cadastrado na turma</li>
+                                        <li>Confira se o UUID da turma está correto</li>
+                                        <li>Certifique-se de que o aluno está associado à turma correta</li>
+                                        <li>Verifique se há espaços em branco no RFID</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                    A requisição está sendo enviada mas não registra presença
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                <div class="accordion-body">
+                                    <ul>
+                                        <li>Verifique o código de resposta HTTP no Serial Monitor</li>
+                                        <li>Confira se o servidor Flask está em execução</li>
+                                        <li>Verifique se o dispositivo está na mesma rede do servidor</li>
+                                        <li>Teste a API usando uma ferramenta como Postman ou curl</li>
+                                        <li>Verifique os logs do servidor Flask para mensagens de erro</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
