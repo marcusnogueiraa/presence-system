@@ -43,7 +43,12 @@ def criar_tabelas():
                 id TEXT PRIMARY KEY,
                 nome_turma TEXT,
                 professor TEXT,
-                sala TEXT)''')
+                sala TEXT,
+                dias_da_semana TEXT,      -- Ex: 'Segunda, Quarta, Sexta'
+                inicio_dia TEXT,          -- Ex: '08:00'
+                fim_dia TEXT,
+                carga_horaria REAL)             -- Ex: '10:00'
+    ''')
     
     # Students table (updated structure)
     c.execute('''CREATE TABLE IF NOT EXISTS alunos (
@@ -90,34 +95,36 @@ def migrar_dados():
     c = conn.cursor()
     
     try:
-        # Check if old structure exists
-        c.execute("PRAGMA table_info(alunos)")
+        # Check if new columns exist
+        c.execute("PRAGMA table_info(turmas)")
         columns = [info[1] for info in c.fetchall()]
         
-        if 'turma_id' in columns:
-            # Migrate data to new structure
-            c.execute('''
-                INSERT INTO aluno_turma (aluno_id, turma_id)
-                SELECT id, turma_id FROM alunos WHERE turma_id IS NOT NULL
-            ''')
-            
-            # Create new table without turma_id
-            c.execute('''
-                CREATE TABLE alunos_nova AS
-                SELECT id, nome, matricula, rfid, foto, email, telefone, data_cadastro
-                FROM alunos
-            ''')
-            
-            c.execute('DROP TABLE alunos')
-            c.execute('ALTER TABLE alunos_nova RENAME TO alunos')
-            
-            conn.commit()
-            print("Migration completed successfully!")
+        # If the columns do not exist, we will add them
+        if 'dias_da_semana' not in columns:
+            c.execute('''ALTER TABLE turmas ADD COLUMN dias_da_semana TEXT''')
+        if 'inicio_dia' not in columns:
+            c.execute('''ALTER TABLE turmas ADD COLUMN inicio_dia TEXT''')
+        if 'fim_dia' not in columns:
+            c.execute('''ALTER TABLE turmas ADD COLUMN fim_dia TEXT''')
+        
+        conn.commit()
+        print("Migração de dados concluída com sucesso!")
     except Exception as e:
         conn.rollback()
-        print(f"Migration error: {e}")
+        print(f"Erro na migração: {e}")
     finally:
         conn.close()
+
+def adicionar_coluna_carga_horaria():
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    
+    # Adiciona a coluna carga_horaria à tabela turmas
+    c.execute('''ALTER TABLE turmas ADD COLUMN carga_horaria REAL''')
+    
+    conn.commit()
+    conn.close()
+
 
 # Authentication routes
 @app.route('/login', methods=['GET', 'POST'])
@@ -271,11 +278,19 @@ def nova_turma():
         nome_turma = request.form['nome_turma']
         professor = request.form['professor']
         sala = request.form['sala']
+        dias_da_semana = request.form['dias_da_semana']
+        inicio_dia = request.form['inicio_dia']
+        fim_dia = request.form['fim_dia']
+        carga_horaria = request.form['carga_horaria']  # Novo campo para carga horária
         
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
-        c.execute("INSERT INTO turmas (id, nome_turma, professor, sala) VALUES (?, ?, ?, ?)",
-                 (turma_id, nome_turma, professor, sala))
+        
+        c.execute('''INSERT INTO turmas 
+            (id, nome_turma, professor, sala, dias_da_semana, inicio_dia, fim_dia, carga_horaria)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', 
+            (turma_id, nome_turma, professor, sala, dias_da_semana, inicio_dia, fim_dia, carga_horaria))
+        
         conn.commit()
         conn.close()
         
@@ -289,13 +304,22 @@ def turma_detail(turma_id):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     
+    # Consultar a turma
     turma = conn.execute("SELECT * FROM turmas WHERE id = ?", (turma_id,)).fetchone()
+    turma = dict(turma) if turma else None  # Converte a Row para dicionário
+
+    print(turma)  # Para depuração, verifique os dados que estão sendo passados
     
     if not turma:
         conn.close()
         return "Turma não encontrada", 404
     
-    # Get class students
+    # Recuperar dias da semana da turma
+    dias_da_semana = turma.get('dias_da_semana', 'Não especificado')
+    inicio_dia = turma.get('inicio_dia', 'Não especificado')
+    fim_dia = turma.get('fim_dia', 'Não especificado')
+
+    # Recuperar alunos da turma
     alunos_turma = conn.execute('''
         SELECT a.id, a.nome, a.matricula, a.rfid
         FROM aluno_turma at
@@ -304,7 +328,7 @@ def turma_detail(turma_id):
         ORDER BY a.nome
     ''', (turma_id,)).fetchall()
     
-    # Get available students to add
+    # Alunos disponíveis para adicionar
     alunos_disponiveis = conn.execute('''
         SELECT a.id, a.nome, a.matricula
         FROM alunos a
@@ -314,7 +338,7 @@ def turma_detail(turma_id):
         ORDER BY a.nome
     ''', (turma_id,)).fetchall()
     
-    # Get class attendance
+    # Presenças
     presencas = conn.execute('''
         SELECT a.nome, a.matricula, p.data_hora 
         FROM presencas p
@@ -325,11 +349,55 @@ def turma_detail(turma_id):
     
     conn.close()
     
+    # Passar os dados para o template
     return render_template('turmas/detalhes.html', 
                          turma=turma, 
                          alunos_turma=alunos_turma,
                          alunos_disponiveis=alunos_disponiveis,
-                         presencas=presencas)
+                         presencas=presencas,
+                         dias_da_semana=dias_da_semana, 
+                         inicio_dia=inicio_dia, 
+                         fim_dia=fim_dia)
+
+@app.route('/editar_turma/<turma_id>', methods=['GET', 'POST'])
+@login_required
+def editar_turma(turma_id):
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    # Carregar dados da turma
+    turma = c.execute("SELECT * FROM turmas WHERE id = ?", (turma_id,)).fetchone()
+    
+    if not turma:
+        conn.close()
+        return "Turma não encontrada", 404
+    
+    # Se o método for POST, atualizar os dados da turma
+    if request.method == 'POST':
+        nome_turma = request.form['nome_turma']
+        professor = request.form['professor']
+        sala = request.form['sala']
+        dias_da_semana = request.form['dias_da_semana']
+        inicio_dia = request.form['inicio_dia']
+        fim_dia = request.form['fim_dia']
+        carga_horaria = request.form['carga_horaria']
+
+        # Atualizar os dados no banco de dados
+        c.execute('''UPDATE turmas
+                     SET nome_turma = ?, professor = ?, sala = ?, dias_da_semana = ?, inicio_dia = ?, fim_dia = ?, carga_horaria = ?
+                     WHERE id = ?''',
+                  (nome_turma, professor, sala, dias_da_semana, inicio_dia, fim_dia, carga_horaria, turma_id))
+        
+        conn.commit()
+        conn.close()
+
+        # Redirecionar para a página de detalhes da turma
+        return redirect(url_for('turma_detail', turma_id=turma_id))
+    
+    # Exibir os dados atuais da turma no formulário
+    return render_template('turmas/editar_turma.html', turma=turma)
+
 
 @app.route('/excluir_turma/<turma_id>', methods=['POST'])
 @login_required
@@ -600,6 +668,70 @@ def registrar_presenca_api():
     
     conn.close()
     return jsonify({'status': 'error', 'message': 'Aluno não encontrado ou não está na turma'}), 404
+
+dias_da_semana_map = {
+    'Segunda': 2,
+    'Terça': 3,
+    'Quarta': 4,
+    'Quinta': 5,
+    'Sexta': 6,
+    'Sábado': 7,
+    'Domingo': 1
+}
+
+# API route to get turma details (dias_da_semana, inicio_dia, fim_dia)
+@app.route('/api/horarios', methods=['GET'])
+def turma_info_api():
+    turma_uuid = request.args.get('uuid')
+    
+    if not turma_uuid:
+        return jsonify({'status': 'error', 'message': 'UUID da turma é necessário'}), 400
+    
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    
+    # Buscar dados da turma com base no UUID
+    turma = c.execute('''
+        SELECT dias_da_semana, inicio_dia, fim_dia
+        FROM turmas
+        WHERE id = ?
+    ''', (turma_uuid,)).fetchone()
+
+    if turma:
+        # Mapeamento dos dias da semana para números
+        dias_da_semana_map = {
+            'Segunda': 2,
+            'Terça': 3,
+            'Quarta': 4,
+            'Quinta': 5,
+            'Sexta': 6,
+            'Sábado': 7,
+            'Domingo': 1
+        }
+
+        # Formatando os dias da semana, início e fim do dia
+        dias = turma['dias_da_semana'].split(', ')  # Convertendo a string para uma lista de dias
+        horarios = []
+        
+        for dia in dias:
+            # Formatar os dados conforme solicitado
+            horarios.append({
+                'dia': dias_da_semana_map[dia], 
+                'inicio': turma['inicio_dia'], 
+                'fim': turma['fim_dia']
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'status': 'success',
+            'horarios': horarios  # Retorna os horários no formato esperado
+        }), 200
+    
+    conn.close()
+    return jsonify({'status': 'error', 'message': 'Turma não encontrada'}), 404
+
 
 @app.route('/api/ajuda')
 @login_required

@@ -10,6 +10,13 @@
         <p class="uuid">
             <i class="bi bi-fingerprint"></i> ID: {{ turma['id'] }}
         </p>
+        <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem; margin: 1rem 0">
+            <p style="margin: 0"><strong>Dias:</strong> {{ turma.dias_da_semana or "Não definido" }}</p>
+            <p style="margin: 0"><strong>Início:</strong> {{ turma.inicio_dia or "--:--" }}</p>
+            <p style="margin: 0"><strong>Término:</strong> {{ turma.fim_dia or "--:--" }}</p>
+            <p style="margin: 0"><strong>Carga Horária:</strong> {{ turma['carga_horaria'] }} horas</p>
+
+        </div>
     </div>
 </div>
 
@@ -23,6 +30,9 @@
                 <i class="bi bi-download"></i> Relatório
             </a>
         </div>
+        <a href="/editar_turma/{{ turma['id'] }}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Editar
+        </a>
     </div>
 
     <div class="row">

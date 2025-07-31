@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Turma - Sistema de Presença{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Editar Turma: {{ turma['nome_turma'] }}</h2>
+    <form method="POST">
+        <!-- Nome da Turma -->
+        <div class="mb-3">
+            <label for="nome_turma" class="form-label">
+                <i class="bi bi-book"></i> Nome da Turma
+            </label>
+            <input type="text" class="form-control form-control-lg" id="nome_turma" name="nome_turma" value="{{ turma['nome_turma'] }}" required>
+        </div>
+
+        <!-- Professor -->
+        <div class="mb-3">
+            <label for="professor" class="form-label">
+                <i class="bi bi-person"></i> Professor
+            </label>
+            <input type="text" class="form-control form-control-lg" id="professor" name="professor" value="{{ turma['professor'] }}" required>
+        </div>
+
+        <!-- Sala -->
+        <div class="mb-3">
+            <label for="sala" class="form-label">
+                <i class="bi bi-building"></i> Sala
+            </label>
+            <input type="text" class="form-control form-control-lg" id="sala" name="sala" value="{{ turma['sala'] }}" required>
+        </div>
+
+        <!-- Dias da Semana -->
+        <div class="mb-3">
+            <label for="dias_da_semana" class="form-label">
+                <i class="bi bi-calendar"></i> Dias da Semana
+            </label>
+            <input type="text" class="form-control" name="dias_da_semana" value="{{ turma['dias_da_semana'] }}" required>
+        </div>
+
+        <!-- Horário de Início -->
+        <div class="mb-3">
+            <label for="inicio_dia" class="form-label">
+                <i class="bi bi-clock"></i> Horário de Início
+            </label>
+            <input type="time" class="form-control" name="inicio_dia" value="{{ turma['inicio_dia'] }}" required>
+        </div>
+
+        <!-- Horário de Fim -->
+        <div class="mb-3">
+            <label for="fim_dia" class="form-label">
+                <i class="bi bi-clock"></i> Horário de Fim
+            </label>
+            <input type="time" class="form-control" name="fim_dia" value="{{ turma['fim_dia'] }}" required>
+        </div>
+
+        <!-- Carga Horária -->
+        <div class="mb-3">
+            <label for="carga_horaria" class="form-label">
+                <i class="bi bi-calendar-check"></i> Carga Horária (em horas)
+            </label>
+            <input type="number" class="form-control" id="carga_horaria" name="carga_horaria" value="{{ turma['carga_horaria'] }}" required>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <a href="/" class="btn btn-lg btn-secondary">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-lg btn-primary">
+                <i class="bi bi-check-circle"></i> Atualizar Turma
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

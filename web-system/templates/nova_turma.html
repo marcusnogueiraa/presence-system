@@ -19,31 +19,72 @@
                 </div>
                 <div class="card-body">
                     <form method="POST">
+                        <!-- Nome da Turma -->
                         <div class="mb-3">
                             <label for="nome_turma" class="form-label">
                                 <i class="bi bi-book"></i> Nome da Turma
                             </label>
-                            <input type="text" class="form-control form-control-lg" id="nome_turma" 
-                                name="nome_turma" required placeholder="Ex: Matemática Avançada">
+                            <input type="text" class="form-control form-control-lg" id="nome_turma" name="nome_turma" required placeholder="Ex: Matemática Avançada">
                         </div>
+
+                        <!-- Professor -->
                         <div class="mb-3">
                             <label for="professor" class="form-label">
                                 <i class="bi bi-person"></i> Professor
                             </label>
-                            <input type="text" class="form-control form-control-lg" id="professor" 
-                                   name="professor" required placeholder="Nome completo do professor">
+                            <input type="text" class="form-control form-control-lg" id="professor" name="professor" required placeholder="Nome completo do professor">
                             <div class="form-text">Informe o nome completo do professor responsável</div>
                         </div>
-                        
-                        <div class="mb-4">
+
+                        <!-- Sala -->
+                        <div class="mb-3">
                             <label for="sala" class="form-label">
                                 <i class="bi bi-building"></i> Sala
                             </label>
-                            <input type="text" class="form-control form-control-lg" id="sala" 
-                                   name="sala" required placeholder="Número ou identificação da sala">
+                            <input type="text" class="form-control form-control-lg" id="sala" name="sala" required placeholder="Número ou identificação da sala">
                             <div class="form-text">Exemplos: Lab 3, Sala 205, Bloco B</div>
                         </div>
-                        
+
+                        <!-- Dias da Semana, Horários e Carga Horária -->
+                        <div class="mb-4">
+                            <div class="row">
+                                <!-- Dias da Semana -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="dias_da_semana" class="form-label">
+                                        <i class="bi bi-calendar"></i> Dias da Semana
+                                    </label>
+                                    <input type="text" class="form-control" name="dias_da_semana" placeholder="Segunda, Quarta, Sexta" required>
+                                    <div class="form-text">Exemplo: Segunda, Terça, Quarta</div>
+                                </div>
+
+                                <!-- Horário de Início -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="inicio_dia" class="form-label">
+                                        <i class="bi bi-clock"></i> Horário de Início
+                                    </label>
+                                    <input type="time" class="form-control" name="inicio_dia" required>
+                                </div>
+
+                                <!-- Horário de Fim -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="fim_dia" class="form-label">
+                                        <i class="bi bi-clock"></i> Horário de Fim
+                                    </label>
+                                    <input type="time" class="form-control" name="fim_dia" required>
+                                </div>
+                            </div>
+
+                            <!-- Carga Horária -->
+                            <div class="mb-3">
+                                <label for="carga_horaria" class="form-label">
+                                    <i class="bi bi-calendar-check"></i> Carga Horária (em horas)
+                                </label>
+                                <input type="number" class="form-control" id="carga_horaria" name="carga_horaria" required placeholder="Exemplo: 40">
+                                <div class="form-text">Informe a carga horária total da turma</div>
+                            </div>
+                        </div>
+
+                        <!-- Botões de Ação -->
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                             <a href="/" class="btn btn-lg btn-secondary">
                                 <i class="bi bi-x-circle"></i> Cancelar
@@ -55,7 +96,6 @@
                     </form>
                 </div>
             </div>
-            
             <div class="card mt-4">
                 <div class="card-header bg-white">
                     <h4 class="mb-0"><i class="bi bi-info-circle"></i> Sobre as Turmas</h4>
