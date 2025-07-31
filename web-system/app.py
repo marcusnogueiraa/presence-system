@@ -669,6 +669,51 @@ def registrar_presenca_api():
     conn.close()
     return jsonify({'status': 'error', 'message': 'Aluno não encontrado ou não está na turma'}), 404
 
+# API route to register presence manually
+@app.route('/api/registrar_presenca_manual', methods=['POST'])
+def registrar_presenca_manual():
+    data = request.get_json()
+    aluno_id = data.get('aluno_id')  # ID do aluno
+    turma_uuid = data.get('uuid')    # UUID da turma
+    
+    if not aluno_id or not turma_uuid:
+        return jsonify({'status': 'error', 'message': 'Dados faltando'}), 400
+    
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    
+    # Verificar se o aluno está na turma
+    aluno = c.execute('''
+        SELECT a.id, a.nome, a.matricula 
+        FROM alunos a
+        JOIN aluno_turma at ON a.id = at.aluno_id
+        WHERE a.id = ? AND at.turma_id = ?
+    ''', (aluno_id, turma_uuid)).fetchone()
+
+    if aluno:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Inserir a presença manualmente
+        c.execute('''
+            INSERT INTO presencas (aluno_id, turma_id, data_hora)
+            VALUES (?, ?, ?)
+        ''', (aluno['id'], turma_uuid, now))
+        conn.commit()
+        conn.close()
+
+        socketio.emit('nova_presenca', {
+            'aluno': aluno['nome'],
+            'turma': turma_uuid,
+            'hora': now,
+            'matricula': aluno['matricula']
+        })
+        
+        return jsonify({'status': 'success', 'message': 'Presença registrada manualmente'}), 200
+    
+    conn.close()
+    return jsonify({'status': 'error', 'message': 'Aluno não encontrado ou não está na turma'}), 404
+
+
 dias_da_semana_map = {
     'Segunda': 2,
     'Terça': 3,

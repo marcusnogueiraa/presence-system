@@ -36,7 +36,7 @@
     </div>
 
     <div class="row">
-        <!-- Alunos da Turma -->
+        <!-- Alunos da Turma e Adicionar Alunos -->
         <div class="col-md-6 mb-4">
             <div class="card aluno-card">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -80,7 +80,6 @@
             </div>
         </div>
 
-        <!-- Adicionar Alunos -->
         <div class="col-md-6 mb-4">
             <div class="card">
                 <div class="card-header bg-white">
@@ -111,9 +110,14 @@
                     {% endif %}
                 </div>
             </div>
+        </div>
 
-            <!-- Presenças -->
-            <div class="card mt-4 presenca-card">
+    </div> <!-- Fim da row -->
+
+    <div class="row">
+        <!-- Presenças e Registrar Presença Manual -->
+        <div class="col-md-6 mb-4">
+            <div class="card presenca-card">
                 <div class="card-header bg-white">
                     <h4 class="mb-0"><i class="bi bi-check-circle"></i> Registros de Presença</h4>
                 </div>
@@ -147,6 +151,48 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card aluno-card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-person-check"></i> Registrar Presença Manual</h4>
+                </div>
+                <div class="card-body">
+                    {% if not alunos_turma %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> Nenhum aluno nesta turma.
+                    </div>
+                    {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Matrícula</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aluno in alunos_turma %}
+                                <tr>
+                                    <td>{{ aluno['nome'] }}</td>
+                                    <td>{{ aluno['matricula'] }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="registrarPresenca({{ aluno['id'] }})">
+                                            <i class="bi bi-check-circle"></i> Registrar Presença
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}
@@ -197,5 +243,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+</script>
+<script>
+function registrarPresenca(alunoId) {
+    const turmaUuid = "{{ turma['id'] }}";  // Pega o UUID da turma atual
+
+    fetch('/api/registrar_presenca_manual', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            aluno_id: alunoId,
+            uuid: turmaUuid
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        if (data.status === 'success') {
+            // Atualizar a UI ou mostrar confirmação ao professor
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao registrar presença:', error);
+        alert('Erro ao registrar presença.');
+    });
+}
 </script>
 {% endblock %}
