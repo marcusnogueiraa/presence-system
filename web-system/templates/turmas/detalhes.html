@@ -140,3 +140,52 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const socket = io();
+    
+    // Debug connection
+    socket.on('connect', () => {
+        console.log('Conectado ao WebSocket');
+    });
+    
+    socket.on('disconnect', () => {
+        console.log('Desconectado do WebSocket');
+    });
+    
+    socket.on('nova_presenca', function(data) {
+        console.log('Nova presença recebida:', data);
+        
+        if (data.turma === "{{ turma['id'] }}") {
+            // Adiciona na tabela
+            const tabela = document.querySelector('.presenca-card tbody');
+            if (tabela) {
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${data.aluno}</td>
+                    <td>${data.matricula}</td>
+                    <td>${data.hora}</td>
+                `;
+                tabela.insertBefore(newRow, tabela.firstChild);
+            }
+            
+            // Notificação
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                <strong>${data.aluno}</strong> registrado às ${data.hora}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.container');
+            if (container) {
+                container.prepend(alertDiv);
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
